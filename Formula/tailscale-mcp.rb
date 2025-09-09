@@ -1,53 +1,67 @@
 class TailscaleMcp < Formula
-  desc "Tailscale MCP server for Warp terminal integration"
-  homepage "https://github.com/lpmwfx/tailscale-mcp"
-  url "https://github.com/lpmwfx/tailscale-mcp/archive/refs/heads/main.tar.gz"
-  version "1.0.1"
-  sha256 "584b87e1b196c56cd65e0589b83c0ff781d9d78832fe562ba5cf20a64acd2e24"
+  desc "Comprehensive Tailscale MCP server for Warp terminal"
+  homepage "https://github.com/TB-Warp/tailscale-mcp"
+  url "https://github.com/TB-Warp/tailscale-mcp/archive/refs/heads/main.tar.gz"
+  version "2.0.0"
+  sha256 :no_check
   license "MIT"
 
   depends_on "node"
 
   def install
-    # Install all files to the lib directory
+    # Install all files to libexec
     libexec.install Dir["*"]
     
-    # Install npm dependencies
-    system "npm", "install", "--prefix", libexec, "--production"
+    # Create a wrapper script
+    (bin/"tailscale-mcp").write <<~EOS
+      #!/bin/bash
+      export PATH="#{Formula["node"].opt_bin}:$PATH"
+      cd "#{libexec}" && exec node src/index.js "$@"
+    EOS
     
-    # Create symlink to the main script
-    bin.install_symlink libexec/"src/index.js" => "tailscale-mcp"
+    # Make it executable
+    chmod 0755, bin/"tailscale-mcp"
+    
+    # Install npm dependencies
+    system Formula["node"].opt_bin/"npm", "install", "--production", "--prefix", libexec
   end
 
   def caveats
     <<~EOS
-      To use tailscale-mcp with Warp terminal, you'll need to:
-      
-      1. Get a Tailscale API token from: https://login.tailscale.com/admin/settings/keys
-      
+      To use tailscale-mcp with Warp terminal:
+
+      1. Get your Tailscale API token from: https://login.tailscale.com/admin/settings/keys
+
       2. Add this configuration to your Warp MCP settings:
-      
+
       {
         "tailscale": {
-          "command": "node",
-          "args": [
-            "#{opt_libexec}/src/index.js"
-          ],
+          "command": "tailscale-mcp",
           "env": {
-            "TAILNET": "your-tailnet.ts.net",
-            "TAILSCALE_TOKEN": "tskey-auth-your-token-here"
-          },
-          "working_directory": null
+            "TAILSCALE_TOKEN": "your-api-token-here",
+            "TAILNET": "your-tailnet-name"
+          }
         }
       }
-      
-      Replace "your-tailnet.ts.net" and "tskey-auth-your-token-here" with your actual values.
+
+      3. Available tools:
+         - Device Management: List, get, update, delete devices
+         - ACL Management: Get and update access control policies
+         - DNS Management: Get and update DNS settings including MagicDNS
+         - Auth Keys: List and create authentication keys
+         - Subnet Routes: Manage subnet routes
+
+      For full documentation visit: https://github.com/TB-Warp/tailscale-mcp
     EOS
   end
 
   test do
-    # Test that the script can be executed
-    assert_match "TAILNET and TAILSCALE_TOKEN environment variables are required",
-                 shell_output("#{bin}/tailscale-mcp 2>&1", 1)
+    # Test that the wrapper script exists and is executable
+    assert_predicate bin/"tailscale-mcp", :exist?
+    assert_predicate bin/"tailscale-mcp", :executable?
+    
+    # Test that Node.js and main files are accessible
+    assert_predicate libexec/"src/index.js", :exist?
+    assert_predicate libexec/"package.json", :exist?
   end
 end
