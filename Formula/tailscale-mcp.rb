@@ -2,8 +2,8 @@ class TailscaleMcp < Formula
   desc "Tailscale MCP server for Warp terminal integration"
   homepage "https://github.com/lpmwfx/tailscale-mcp"
   url "https://github.com/lpmwfx/tailscale-mcp/archive/refs/heads/main.tar.gz"
-  version "1.0.0"
-  sha256 "554240547f0467a0463d4041cab25ad744ab72fca144988d0a82a76b9c628fc1"
+  version "1.0.1"
+  sha256 "584b87e1b196c56cd65e0589b83c0ff781d9d78832fe562ba5cf20a64acd2e24"
   license "MIT"
 
   depends_on "node"
