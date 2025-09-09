@@ -3,7 +3,7 @@ class TailscaleMcp < Formula
   homepage "https://github.com/TB-Warp/tailscale-mcp"
   url "https://github.com/TB-Warp/tailscale-mcp/archive/refs/heads/main.tar.gz"
   version "2.0.0"
-  sha256 :no_check
+  sha256 "34d90a0286f00a69e4d0a4934edc63c67715e6758a8a5794a29973775e48b544"
   license "MIT"
 
   depends_on "node"
